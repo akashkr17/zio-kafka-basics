@@ -1,14 +1,36 @@
 package edu.knoldus
 
+import org.apache.kafka.clients.producer.{ProducerRecord, RecordMetadata}
 import zio._
 import zio.blocking.Blocking
 import zio.clock.Clock
 import zio.console.Console
 import zio.json._
 import zio.kafka.consumer._
+import zio.kafka.producer.{Producer, ProducerSettings}
 import zio.kafka.serde.Serde
 import zio.stream._
-object Main extends zio.App {
+
+object ZioKafkaProducer extends zio.App {
+  import ZioKafkaConsumer._
+  val producerSetting = ProducerSettings(List("localhost:9092"))
+  val managedProducer = Producer.make(producerSetting,Serde.string,matchSerde)
+  val producer: ZLayer[Blocking, Throwable, Producer[Any, String, Match]] = ZLayer.fromManaged(managedProducer)
+
+
+  val finalScore: Match = Match(Array(
+    MatchPlayer("ITA",2),
+    MatchPlayer("ENG",1),
+    MatchPlayer("BRAZIL",4),
+    MatchPlayer("AFR",3)
+  ))
+
+  val record = new ProducerRecord("updates","update-3",finalScore)
+  val producerEffect: ZIO[Producer[Any, String, Match],Throwable, RecordMetadata] = Producer.produce(record)
+  override def run(args: List[String]): URIO[zio.ZEnv, ExitCode] =
+    producerEffect.provideSomeLayer(producer).exitCode
+}
+object ZioKafkaConsumer extends zio.App {
 
   val consumerSetting: ConsumerSettings = ConsumerSettings(List("localhost:9092"))
     .withGroupId("updates-score")
@@ -28,7 +50,7 @@ object Main extends zio.App {
   }
 
   case class Match(players: Array[MatchPlayer]) {
-    def score = s"${players(0)} - ${players(1)}"
+    def score = s"${players(0)} | ${players(1)} | ${players(2)} | ${players(3)}"
   }
   object Match {
     implicit val encoder: JsonEncoder[Match] = DeriveJsonEncoder.gen[Match]
