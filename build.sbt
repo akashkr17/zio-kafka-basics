@@ -5,10 +5,6 @@ version := "0.1"
 scalaVersion := "2.13.8"
 
 
-libraryDependencies ++= Seq(
-  "dev.zio" %% "zio-kafka"   % "0.15.0",
-  "dev.zio" %% "zio-json"    % "0.1.5"
-)
 
 libraryDependencies ++= Seq(
   "org.apache.logging.log4j" % "log4j-core" % "2.13.3",
