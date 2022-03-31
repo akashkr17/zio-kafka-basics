@@ -1,11 +1,6 @@
-package edu.knoldus
-
 import org.apache.kafka.clients.producer.{ProducerRecord, RecordMetadata}
 import zio._
 import zio.blocking.Blocking
-import zio.clock.Clock
-import zio.console.Console
-import zio.json._
 import zio.kafka.consumer._
 import zio.kafka.producer.{Producer, ProducerSettings}
 import zio.kafka.serde.Serde
@@ -27,7 +22,7 @@ object ZioKafkaConsumer extends zio.App {
     .withGroupId("zio-group"))
   val consumer = ZLayer.fromManaged(managedConsumer)
 
-  val streams: ZStream[Console with Clock, Throwable, OffsetBatch] = Consumer.subscribeAnd(Subscription.topics("kafkaTopic"))
+  val streams= Consumer.subscribeAnd(Subscription.topics("kafkaTopic"))
     .plainStream(Serde.string,Serde.string)
     .map(cr => (cr.value,cr.offset))
     .tap {
