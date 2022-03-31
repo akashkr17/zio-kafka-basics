@@ -1,3 +1,5 @@
+package edu.knoldus
+
 import org.apache.kafka.clients.producer.{ProducerRecord, RecordMetadata}
 import zio._
 import zio.blocking.Blocking
